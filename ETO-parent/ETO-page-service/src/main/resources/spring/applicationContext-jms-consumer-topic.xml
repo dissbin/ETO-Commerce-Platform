@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:amq="http://activemq.apache.org/schema/core"
+	xmlns:jms="http://www.springframework.org/schema/jms"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context   
+		http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="com.ETO.page.service.impl"></context:component-scan>
+	<!-- 连接工厂 -->
+	<bean id="targetConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="tcp://59.110.172.52:61616"></property>
+	</bean>
+	<!-- 管理工厂 -->
+	<bean id="connectionFactory"
+		class="org.springframework.jms.connection.SingleConnectionFactory">
+		<property name="targetConnectionFactory" ref="targetConnectionFactory"></property>
+	</bean>
+	<!-- 定义生成商品页载体 -->
+	<bean id="topicPageDestination" class="org.apache.activemq.command.ActiveMQTopic">
+		<!-- 载体名称 -->
+		<constructor-arg value="ETO-topic-page"></constructor-arg>
+	</bean>
+	<!-- 自定义消息监听器 (注解实现)-->
+	
+	<!-- 生成商品页消息监听容器 (能直接启动！相当于运行了监听类)-->
+	<bean class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="destination" ref="topicPageDestination" />
+		<property name="messageListener" ref="topicPageListener" />
+	</bean>
+	
+	<!-- 定义删除商品页载体 -->
+	<bean id="topicPageDeleteDestination" class="org.apache.activemq.command.ActiveMQTopic">
+		<!-- 载体名称 -->
+		<constructor-arg value="ETO-topic-page-delete"></constructor-arg>
+	</bean>
+	<!-- 自定义消息监听器 (注解实现)-->
+	
+	<!-- 生成商品页消息监听容器 (能直接启动！相当于运行了监听类)-->
+	<bean class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="destination" ref="topicPageDeleteDestination" />
+		<property name="messageListener" ref="topicPageDeleteListener" />
+	</bean>
+	
+</beans>

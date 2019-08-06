@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:amq="http://activemq.apache.org/schema/core"
+	xmlns:jms="http://www.springframework.org/schema/jms"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context   
+		http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- 连接工厂 -->
+	<bean id="targetConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="tcp://59.110.172.52:61616"></property>
+	</bean>
+	<!-- 管理工厂 -->
+	<bean id="connectionFactory"
+		class="org.springframework.jms.connection.SingleConnectionFactory">
+		<property name="targetConnectionFactory" ref="targetConnectionFactory"></property>
+	</bean>
+	<!-- 定义发送队列载体 -->
+	<bean id="queueSolrDestination" class="org.apache.activemq.command.ActiveMQQueue">
+		<!-- 载体名称 -->
+		<constructor-arg value="ETO-jms-solr"></constructor-arg>
+	</bean>
+	<!-- 自定义消息监听器(注解实现) -->
+	
+	<!-- 发送消息监听容器 (能直接启动！相当于运行了监听类)-->
+	<bean class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="destination" ref="queueSolrDestination" />
+		<property name="messageListener" ref="itemSearchListener" />
+	</bean>
+	
+	<!-- 定义删除队列载体 -->
+	<bean id="queueSolrDeleteDestination" class="org.apache.activemq.command.ActiveMQQueue">
+		<!-- 载体名称 -->
+		<constructor-arg value="ETO-queue-solr-delete"></constructor-arg>
+	</bean>
+	<!-- 自定义消息监听器(注解实现) -->
+	
+	<!-- 删除消息监听容器 (能直接启动！相当于运行了监听类)-->
+	<bean class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="destination" ref="queueSolrDeleteDestination" />
+		<property name="messageListener" ref="itemDeleteListener" />
+	</bean>
+</beans>

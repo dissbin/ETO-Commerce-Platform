@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans
+	xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/security 
+						http://www.springframework.org/schema/security/spring-security.xsd">
+						
+	<!-- 设置页面不登录也能访问 -->
+	<http pattern="/*.html" security="none"></http>	
+	<http pattern="/js/**" security="none"></http>	
+	<http pattern="/css/**" security="none"></http>
+	<http pattern="/img/**" security="none"></http>	
+	<http pattern="/plugins/**" security="none"></http>
+	<!-- 页面拦截规则  use-expression表示不启动SPEL表达式-->
+	<http use-expressions="false">
+		<!-- 定义认证用户以及认证用户可以访问的资源  -->
+		<intercept-url pattern="/**" access="ROLE_ADMIN"/>
+		<form-login login-page="/login.html" default-target-url="/admin/index.html" authentication-failure-url="/login.html" always-use-default-target="true"/>
+		<csrf disabled="true"/>
+		<headers>
+			<frame-options policy="SAMEORIGIN"/>
+		</headers>
+		<logout />
+	</http>
+	<!-- 数据库连接池 -->
+	<beans:bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		destroy-method="close">
+		<beans:property name="url" value="${jdbc.url}" />
+		<beans:property name="username" value="${jdbc.username}" />
+		<beans:property name="password" value="${jdbc.password}" />
+		<beans:property name="driverClassName" value="${jdbc.driver}" />
+		<beans:property name="maxActive" value="10" />
+		<beans:property name="minIdle" value="5" />
+	</beans:bean>
+	<!-- 认证管理器 -->
+	<authentication-manager>
+		<!-- 认证提供者 -->
+		<authentication-provider user-service-ref="userServiceDetails"/>
+	</authentication-manager> 
+	<beans:bean id="userServiceDetails" class="org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl">
+		<beans:property name="dataSource" ref="dataSource"></beans:property>
+	</beans:bean>
+</beans:beans>
